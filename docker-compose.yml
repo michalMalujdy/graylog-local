@@ -5,6 +5,7 @@ services:
     image: mongo:4.2
     networks:
       - graylog
+    restart: unless-stopped
   # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/7.10/docker.html
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
@@ -23,6 +24,7 @@ services:
           memory: 1g
     networks:
       - graylog
+    restart: unless-stopped
   # Graylog: https://hub.docker.com/r/graylog/graylog/
   graylog:
     image: graylog/graylog:4.2.5
@@ -35,7 +37,7 @@ services:
     entrypoint: /usr/bin/tini -- wait-for-it elasticsearch:9200 --  /docker-entrypoint.sh
     networks:
       - graylog
-    restart: always
+    restart: unless-stopped
     depends_on:
       - mongo
       - elasticsearch
@@ -50,8 +52,14 @@ services:
       - 12201:12201
       # GELF UDP
       - 12201:12201/udp
-      # Custom input port
+      # Custom input port for Gelf
       - 5050:5050
+      # Custom input port for Beats
+      - 5045:5045
+  graylog-initializer:
+    build: ./GraylogInitializer/.
+    restart: "no"
+
 networks:
   graylog:
     driver: bridge
