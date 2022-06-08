@@ -59,6 +59,8 @@ services:
   graylog-initializer:
     build: ./GraylogInitializer/.
     restart: "no"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=docker
 
 networks:
   graylog:
