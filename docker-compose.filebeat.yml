@@ -1,0 +1,8 @@
+﻿version: '3'
+services:
+  filebeat:
+    build: ./Filebeat/.
+    restart: always
+    user: "root"
+    volumes:
+      - "C:/ProgramData/Scalepoint/logs:/usr/share/scalepoint-logs"
