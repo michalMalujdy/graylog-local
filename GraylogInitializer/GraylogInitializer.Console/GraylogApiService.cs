@@ -16,6 +16,9 @@ public class GraylogApiService
     private const string GelfInputType = "org.graylog2.inputs.gelf.http.GELFHttpInput";
     private const int GelfInputPort = 5050;
 
+    private const string BeatsInputType = "org.graylog.plugins.beats.Beats2Input";
+    private const int BeatsInputPort = 5045;
+
     public GraylogApiService(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -30,6 +33,12 @@ public class GraylogApiService
         {
             var gelfCreateInputDto = GetCreateGelfInputDto();
             await _httpClient.PostAsJsonAsync("/api/system/inputs", gelfCreateInputDto);
+        }
+
+        if (!IsInputPresent(existingInputs, BeatsInputType, BeatsInputPort))
+        {
+            var beatsCreateInputDto = GetCreateBeatsInputDto();
+            await _httpClient.PostAsJsonAsync("/api/system/inputs", beatsCreateInputDto);
         }
     }
 
@@ -86,6 +95,30 @@ public class GraylogApiService
                 MaxChunkSize = 65536,
                 NumberOfWorkingThreads = 2,
                 Port = GelfInputPort,
+                ReceiveBufferSize = 1048576,
+                TcpKeepAlive = true,
+                TlsEnable = false,
+                TlsCertFile = "",
+                TlsClientAuth = "disabled",
+                TlsClientAuthCertFile = "",
+                TlsKeyFile = "",
+                TlsKeyPassword = ""
+            }
+        };
+
+    private static CreateInputDto GetCreateBeatsInputDto()
+        => new()
+        {
+            Title = "Beats",
+            Global = true,
+            Type = BeatsInputType,
+            Configuration = new CreateInputDto.ConfigurationDto
+            {
+                BindAddress = "0.0.0.0",
+                EnableCors = true,
+                IdleWriterTimeout = 60,
+                NumberOfWorkingThreads = 2,
+                Port = BeatsInputPort,
                 ReceiveBufferSize = 1048576,
                 TcpKeepAlive = true,
                 TlsEnable = false,

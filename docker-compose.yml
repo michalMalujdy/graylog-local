@@ -56,18 +56,28 @@ services:
       - 5050:5050
       # Custom input port for Beats
       - 5045:5045
+      # Custom input port for Beats
+      - 5045:5045/udp
+      # Custom input port for Beats
+      - "53:53"
+      - "53:53/udp"
   graylog-initializer:
     build: ./GraylogInitializer/.
     restart: "no"
     environment:
       - ASPNETCORE_ENVIRONMENT=docker
+    networks:
+      - graylog
   filebeat:
     build: ./Filebeat/.
     restart: always
     user: "root"
     volumes:
       - "C:/ProgramData/Scalepoint/logs:/usr/share/scalepoint-logs"
-
+    depends_on:
+      - graylog
+    networks:
+      - graylog
 networks:
   graylog:
     driver: bridge

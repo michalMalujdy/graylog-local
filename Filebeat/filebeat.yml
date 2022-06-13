@@ -1,43 +1,5 @@
-﻿---
-name: filebeat-local
-tags: []
-fields: {}
-fields_under_root: false
-filebeat:
-  config.inputs:
-    enabled: true
-    path: /usr/share/filebeat/conf.d/*.yml
-  config.modules:
-    enabled: false
-    path: /usr/share/filebeat/modules.d/*.yml
-  shutdown_timeout: '0'
-  modules: []
-#  registry:
-#    path: "/usr/share/filebeat"
-#    file_permissions: '0600'
-#    flush: 0s
-http: {}
-cloud: {}
-output:
-  logstash:
-    hosts:
-      - localhost:5045
-    ports:
-      - 5045
-    timeout: 240
-    bulk_max_size: 128
-    slow_start: true
-    ssl:
-      enabled: true
-      supported_protocols: TLSv1.2
-shipper: {}
-logging: {}
-autodiscover: {}
-runoptions: {}
-processors:
-  - rename:
-      fields:
-        - from: source
-          to: file
-      ignore_missing: true
-setup: {}
+﻿filebeat.config.inputs:
+  enabled: true
+  path: "/usr/share/filebeat/conf.d/*.yml"
+output.logstash:
+  hosts: ["graylog:5045"]
