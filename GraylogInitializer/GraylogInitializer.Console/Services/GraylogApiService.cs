@@ -1,14 +1,12 @@
 ﻿using System.Net.Http.Json;
-using System.Net.Http.Json;
 using System.Text.Json;
 using GraylogInitializer.Console.Configurations;
 using GraylogInitializer.Console.Dtos;
-using GraylogInitializer.Console.Dtos.GetInputs;
 using Microsoft.Extensions.Configuration;
 
-namespace GraylogInitializer.Console;
+namespace GraylogInitializer.Console.Services;
 
-public class GraylogApiService
+public class GraylogApiService : IGraylogApiService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;

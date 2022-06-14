@@ -8,7 +8,6 @@ public class CreateInputDto
     public string Type { get; set; }
     public bool Global { get; set; }
     public ConfigurationDto Configuration { get; set; }
-    public string Node { get; set; }
 
     public class ConfigurationDto
     {

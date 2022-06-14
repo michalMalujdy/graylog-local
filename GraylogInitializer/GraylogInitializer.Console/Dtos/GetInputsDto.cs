@@ -1,4 +1,4 @@
-﻿namespace GraylogInitializer.Console.Dtos.GetInputs;
+﻿namespace GraylogInitializer.Console.Dtos;
 
 public class GetInputsDto
 {

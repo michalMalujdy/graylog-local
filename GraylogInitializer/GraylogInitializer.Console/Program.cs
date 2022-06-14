@@ -1,10 +1,18 @@
-﻿using GraylogInitializer.Console;
+﻿using GraylogInitializer.Console.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Core;
 
-var configuration = BuildConfiguration();
-var graylogApiService = new GraylogApiService(configuration);
-Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+Log.Logger = BuildLogger();
+
+using var host = Host.CreateDefaultBuilder()
+    .ConfigureServices(SetupServices)
+    .UseSerilog()
+    .Build();
+
+var graylogApiService = host.Services.GetRequiredService<IGraylogApiService>();
 
 var retryCount = 0;
 const int maxRetries = 15;
@@ -13,7 +21,6 @@ while (retryCount < maxRetries)
 {
     try
     {
-        Log.Debug("Starting the Graylog initialization");
         await graylogApiService.EnsureInputs();
         await graylogApiService.EnsureStreams();
         break;
@@ -25,6 +32,20 @@ while (retryCount < maxRetries)
         retryCount++;
         await Task.Delay(5000);
     }
+}
+
+Logger BuildLogger()
+{
+    return new LoggerConfiguration()
+        .MinimumLevel.Debug()
+        .WriteTo.Console()
+        .CreateLogger();
+}
+
+void SetupServices(IServiceCollection services)
+{
+    services.AddSingleton(BuildConfiguration());
+    services.AddScoped<IGraylogApiService, GraylogApiService>();
 }
 
 IConfiguration BuildConfiguration()
