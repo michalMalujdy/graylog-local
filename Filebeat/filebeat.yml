@@ -2,4 +2,4 @@
   enabled: true
   path: "/usr/share/filebeat/conf.d/*.yml"
 output.logstash:
-  hosts: ["graylog:5045"]
+  hosts: ["graylog-server:5045"]
