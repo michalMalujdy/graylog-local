@@ -3,6 +3,7 @@ using System.Text.Json;
 using GraylogInitializer.Console.Configurations;
 using GraylogInitializer.Console.Dtos;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace GraylogInitializer.Console.Services;
 
@@ -10,6 +11,7 @@ public class GraylogApiService : IGraylogApiService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<GraylogApiService> _logger;
 
     private const string GelfInputType = "org.graylog2.inputs.gelf.http.GELFHttpInput";
     private const int GelfInputPort = 5050;
@@ -17,9 +19,10 @@ public class GraylogApiService : IGraylogApiService
     private const string BeatsInputType = "org.graylog.plugins.beats.Beats2Input";
     private const int BeatsInputPort = 5045;
 
-    public GraylogApiService(IConfiguration configuration)
+    public GraylogApiService(IConfiguration configuration, ILogger<GraylogApiService> logger)
     {
         _configuration = configuration;
+        _logger = logger;
         _httpClient = SetupHttpClient();
     }
 
@@ -29,15 +32,19 @@ public class GraylogApiService : IGraylogApiService
 
         if (!IsInputPresent(existingInputs, GelfInputType, GelfInputPort))
         {
+            _logger.LogInformation("GELF input not present, creating one");
             var gelfCreateInputDto = GetCreateGelfInputDto();
             await _httpClient.PostAsJsonAsync("/api/system/inputs", gelfCreateInputDto);
         }
 
         if (!IsInputPresent(existingInputs, BeatsInputType, BeatsInputPort))
         {
+            _logger.LogInformation("Beats input not present, creating one");
             var beatsCreateInputDto = GetCreateBeatsInputDto();
             await _httpClient.PostAsJsonAsync("/api/system/inputs", beatsCreateInputDto);
         }
+
+        _logger.LogInformation("Inputs setup correctly");
     }
 
     public async Task EnsureStreams()
@@ -46,11 +53,16 @@ public class GraylogApiService : IGraylogApiService
         var configStreams = GetStreamConfigurations();
 
         var existingStreams = await _httpClient.GetFromJsonAsync<GetStreamsDto>("/api/streams");
+        _logger.LogInformation("Existing streams: {@ExistingStreams}", existingStreams.Streams.Select(x => x.Title));
+
         var streamsToCreate = configStreams.Where(x => existingStreams!.Streams.All(y => y.Title != x.Title));
+        _logger.LogInformation("Streams to create: {@StreamsToCreate}", streamsToCreate.Select(x => x.Title));
 
         var createdStreamIds = await CreateStreams(streamsToCreate, defaultIndex);
         await Task.Delay(5000);
         await StartCreatedStreams(createdStreamIds);
+
+        _logger.LogInformation("Streams setup correctly");
     }
 
     private HttpClient SetupHttpClient()
@@ -145,7 +157,9 @@ public class GraylogApiService : IGraylogApiService
         return streamConfigurations;
     }
 
-    private async Task<List<string>> CreateStreams(IEnumerable<StreamConfiguration> streamsToCreate, GetIndicesDto.IndexDto defaultIndex)
+    private async Task<List<string>> CreateStreams(
+        IEnumerable<StreamConfiguration> streamsToCreate,
+        GetIndicesDto.IndexDto defaultIndex)
     {
         var createdStreamsIds = new List<string>();
 

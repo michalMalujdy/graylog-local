@@ -12,7 +12,7 @@ using var host = Host.CreateDefaultBuilder()
 
 Log.Logger = BuildLogger();
 
-host.Services
+await host.Services
     .GetRequiredService<IGraylogInitializerService>()
     .InitializeGraylog();
 
