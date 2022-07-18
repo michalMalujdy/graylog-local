@@ -1,20 +1,24 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using GraylogInitializer.Console.Services.Abstraction;
+using Microsoft.Extensions.Logging;
 
-namespace GraylogInitializer.Console.Services;
+namespace GraylogInitializer.Console.Services.Implementation;
 
 public class GraylogInitializerService : IGraylogInitializerService
 {
-    private readonly IGraylogApiService _graylogApiService;
+    private readonly IInputService _inputService;
+    private readonly IStreamService _streamService;
     private readonly ILogger<GraylogInitializerService> _logger;
 
     private const int MaxRetries = 15;
     private const int DelayInMilliseconds = 5000;
 
     public GraylogInitializerService(
-        IGraylogApiService graylogApiService,
+        IInputService inputService,
+        IStreamService streamService,
         ILogger<GraylogInitializerService> logger)
     {
-        _graylogApiService = graylogApiService;
+        _inputService = inputService;
+        _streamService = streamService;
         _logger = logger;
     }
 
@@ -28,8 +32,8 @@ public class GraylogInitializerService : IGraylogInitializerService
             {
                 _logger.LogInformation("Trying to initialize Graylog, try number: {TryNumber}", retryCount + 1);
 
-                await _graylogApiService.EnsureInputs();
-                await _graylogApiService.EnsureStreams();
+                await _inputService.EnsureInputs();
+                await _streamService.EnsureStreams();
 
                 break;
             }

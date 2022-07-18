@@ -1,4 +1,4 @@
-﻿namespace GraylogInitializer.Console.Services;
+﻿namespace GraylogInitializer.Console.Services.Abstraction;
 
 public interface IGraylogInitializerService
 {

@@ -1,9 +1,11 @@
-﻿using GraylogInitializer.Console.Services;
+﻿using GraylogInitializer.Console.Services.Abstraction;
+using GraylogInitializer.Console.Services.Implementation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
+using IHttpClientFactory = GraylogInitializer.Console.Services.Abstraction.IHttpClientFactory;
 
 using var host = Host.CreateDefaultBuilder()
     .ConfigureServices(SetupServices)
@@ -26,7 +28,10 @@ void SetupServices(IServiceCollection services)
 {
     services.AddSingleton(BuildConfiguration());
     services.AddScoped<IGraylogInitializerService, GraylogInitializerService>();
-    services.AddScoped<IGraylogApiService, GraylogApiService>();
+    services.AddScoped<IInputService, InputService>();
+    services.AddScoped<IStreamService, StreamService>();
+    services.AddScoped<IDtoFactory, DtoFactory>();
+    services.AddScoped<IHttpClientFactory, HttpClientFactory>();
 }
 
 IConfiguration BuildConfiguration()
